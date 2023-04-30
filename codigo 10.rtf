@@ -1,0 +1,122 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww33400\viewh20500\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 const moment = require('moment');\
+\
+// Store registered users and matches\
+const users = \{\};\
+const matches = [];\
+\
+// Function to generate a unique user ID\
+function generateUserId() \{\
+  return Math.floor(Math.random() * 90000) + 10000;\
+\}\
+\
+// Function to generate a unique match ID\
+function generateMatchId() \{\
+  return Math.floor(Math.random() * 90000) + 10000;\
+\}\
+\
+// Function to register a new user\
+function registerUser(name, phoneNumber) \{\
+  // Generate a new user ID\
+  const userId = generateUserId();\
+  \
+  // Store the user information\
+  users[phoneNumber] = \{\
+    id: userId,\
+    name: name\
+  \};\
+  \
+  // Return the user ID\
+  return userId;\
+\}\
+\
+// Function to create a new match\
+function createMatch(day, time) \{\
+  // Generate a new match ID\
+  const matchId = generateMatchId();\
+  \
+  // Store the match information\
+  const newMatch = \{\
+    id: matchId,\
+    day: day,\
+    time: time,\
+    players: []\
+  \};\
+  matches.push(newMatch);\
+  \
+  // Return the match ID\
+  return matchId;\
+\}\
+\
+// Function to sign up for a match\
+function signUpForMatch(phoneNumber, name, matchId) \{\
+  // Find the match to sign up for\
+  const match = matches.find(m => m.id === matchId);\
+  if (!match) \{\
+    console.log(`Match $\{matchId\} not found.`);\
+    return;\
+  \}\
+  \
+  // Find the user's ID\
+  const user = users[phoneNumber];\
+  if (!user) \{\
+    console.log(`User with phone number $\{phoneNumber\} not found.`);\
+    return;\
+  \}\
+  \
+  // Add the user to the match\
+  match.players.push(\{\
+    id: user.id,\
+    name: name,\
+    score: 0\
+  \});\
+  \
+  // Return the match information and user ID\
+  console.log(`$\{match.id\} $\{match.day\} $\{match.time\}\\n$\{user.id\} $\{name\}`);\
+\}\
+\
+// Function to update the score for a user in a match\
+function updateScoreForUser(phoneNumber, matchId, score) \{\
+  // Find the match to update the score for\
+  const match = matches.find(m => m.id === matchId);\
+  if (!match) \{\
+    console.log(`Match $\{matchId\} not found.`);\
+    return;\
+  \}\
+  \
+  // Find the user to update the score for\
+  const user = match.players.find(p => users[p.id].phoneNumber === phoneNumber);\
+  if (!user) \{\
+    console.log(`User with phone number $\{phoneNumber\} not found.`);\
+    return;\
+  \}\
+  \
+  // Update the user's score\
+  user.score += score;\
+  \
+  // Return the match information and updated score\
+  console.log(`$\{match.id\} $\{match.day\} $\{match.time\}\\n$\{user.id\} $\{users[user.id].name\} $\{user.score\}`);\
+\}\
+\
+// Example usage:\
+const phoneNumber = "+11234567890";\
+const name = "John Smith";\
+const matchDay = "Monday";\
+const matchTime = "10:00";\
+\
+// Register the user and create the match\
+const userId = registerUser(name, phoneNumber);\
+const matchId = createMatch(matchDay, matchTime);\
+\
+// Sign up for the match\
+signUpForMatch(phoneNumber, name, matchId);\
+\
+// Update the score for the user in the match\
+updateScoreForUser(phoneNumber, matchId, 5);\
+}
