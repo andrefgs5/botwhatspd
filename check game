@@ -1,0 +1,118 @@
+/ Initialize user data
+let userData = {
+  "+351936836204": {
+    firstName: "André",
+    lastName: "Silva",
+    elo: 1000,
+    gamesPlayed: [],
+  },
+  "+123456789": {
+    firstName: "John",
+    lastName: "Doe",
+    elo: 1000,
+    gamesPlayed: [],
+  },
+};
+
+// Initialize games data
+let games = [
+  {
+    id: "Game1",
+    time: "10h00",
+    court: "M4",
+    players: [],
+  },
+  {
+    id: "Game2",
+    time: "12h00",
+    court: "M3",
+    players: [],
+  },
+];
+
+// Helper function to calculate elo difference based on the expected probability
+function calculateEloDifference(winnerElo, loserElo) {
+  const expectedProbability =
+    1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
+  return Math.round(32 * (1 - expectedProbability));
+}
+
+// Function to join a game alone
+function joinGameAlone(phoneNumber, gameId) {
+  let user = userData[phoneNumber];
+  let game = games.find((game) => game.id === gameId);
+
+  // Check if game exists
+  if (!game) {
+    return "Game not found.";
+  }
+
+  // Check if game is full
+  if (game.players.length >= 4) {
+    return "Game is full.";
+  }
+
+  // Check if user is already in the game
+  if (game.players.find((player) => player.phone === phoneNumber)) {
+    return "You are already in this game.";
+  }
+
+  // Add user to the game
+  let playerData = {
+    phone: phoneNumber,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    elo: user.elo,
+    partner: null,
+  };
+  game.players.push(playerData);
+
+  return `You have joined ${gameId}.\n\nPlayers:\n${game.players
+    .map((player, index) => `${index + 1}. ${player.firstName} ${player.lastName} (${player.elo})`)
+    .join("\n")}`;
+}
+
+// Function to join a game with a partner
+function joinGameWithPartner(phoneNumber, gameId, partnerPhoneNumber) {
+  let user = userData[phoneNumber];
+  let partner = userData[partnerPhoneNumber];
+  let game = games.find((game) => game.id === gameId);
+
+  // Check if game exists
+  if (!game) {
+    return "Game not found.";
+  }
+
+  // Check if game is full
+  if (game.players.length >= 4) {
+    return "Game is full.";
+  }
+
+  // Check if user is already in the game
+  if (game.players.find((player) => player.phone === phoneNumber)) {
+    return "You are already in this game.";
+  }
+
+  // Check if partner is already in the game
+  if (game.players.find((player) => player.phone === partnerPhoneNumber)) {
+    return "Partner is already in this game.";
+  }
+
+  // Add user and partner to the game
+  let playerData = {
+    phone: phoneNumber,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    elo: user.elo,
+    partner: partnerPhoneNumber,
+  };
+  let partnerData = {
+    phone: partnerPhoneNumber,
+    firstName: partner.firstName,
+    lastName: partner.lastName,
+    elo: partner.elo,
+    partner: phoneNumber,
+  };
+  game.players.push(playerData, partnerData);
+
+  return `You and ${partner
