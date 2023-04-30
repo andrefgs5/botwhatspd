@@ -1,0 +1,90 @@
+const fs = require('fs');
+
+// Load user data from file, if it exists
+let userData = {};
+if (fs.existsSync('userData.json')) {
+  userData = JSON.parse(fs.readFileSync('userData.json'));
+}
+
+// Games for the day
+let games = [
+  {
+    name: "Game 1",
+    time: "10h00",
+    court: "M4",
+    players: []
+  },
+  {
+    name: "Game 2",
+    time: "12h00",
+    court: "M3",
+    players: []
+  },
+  {
+    name: "Game 3",
+    time: "14h00",
+    court: "M2",
+    players: []
+  },
+  {
+    name: "Game 4",
+    time: "16h00",
+    court: "M1",
+    players: []
+  }
+];
+
+// Add fake number to the list of players
+const fakeNumber = "+351936836204";
+userData[fakeNumber] = {
+  firstName: "André",
+  lastName: "Silva",
+  elo: 1200,
+  last3Games: []
+};
+
+// Function to calculate Elo changes
+function calculateEloChange(player1, player2, score) {
+  const K = 32;
+  const expectedScore1 = 1 / (1 + 10 ** ((player2.elo - player1.elo) / 400));
+  const expectedScore2 = 1 / (1 + 10 ** ((player1.elo - player2.elo) / 400));
+  const actualScore1 = score[0] / (score[0] + score[1]);
+  const actualScore2 = score[1] / (score[0] + score[1]);
+  const delta1 = K * (actualScore1 - expectedScore1);
+  const delta2 = K * (actualScore2 - expectedScore2);
+  return [delta1, delta2];
+}
+
+// Function to update user data after a match
+function updateUserData(game, team1, team2, score) {
+  // Calculate Elo changes for each player
+  const [delta1, delta2] = calculateEloChange(team1[0], team2[0], score);
+  team1[0].elo += delta1;
+  team2[0].elo += delta2;
+
+  // Update user data for each player in team 1
+  for (const player of team1) {
+    const phoneNumber = player.phoneNumber;
+    userData[phoneNumber].elo = player.elo;
+    const gameResult = {
+      name: game.name,
+      score: score,
+      partner: team1.find(p => p !== player).firstName + " " + team1.find(p => p !== player).lastName,
+      opponent: team2[0].firstName + " " + team2[0].lastName,
+      eloChange: Math.round(delta1)
+    };
+    userData[phoneNumber].last3Games.push(gameResult);
+    if (userData[phoneNumber].last3Games.length > 3) {
+      userData[phoneNumber].last3Games.shift();
+    }
+  }
+
+  // Update user data for each player in team 2
+  for (const player of team2) {
+    const phoneNumber = player.phoneNumber;
+    userData[phoneNumber].elo = player.elo;
+    const gameResult = {
+      name: game.name,
+      score: [score[1], score[0]],
+      partner: team2.find(p => p !== player).firstName + " " + team2.find(p => p !== player).lastName,
+      opponent: team1[0
