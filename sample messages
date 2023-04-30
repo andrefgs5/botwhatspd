@@ -1,0 +1,73 @@
+// Initialize user data object
+let users = {};
+
+// Handler function for messages
+function handleMessage(message) {
+  // Get user's phone number
+  const phoneNumber = message.phone_number;
+
+  // If user is not in the users object, create a new entry with their name and Elo rating
+  if (!users[phoneNumber]) {
+    users[phoneNumber] = {
+      name: 'André Silva',
+      elo: 1200
+    };
+  }
+
+  // Parse message text
+  const command = message.body.split(' ')[0];
+  const argument = message.body.split(' ')[1];
+
+  // Check if user wants to join a game
+  if (command.toLowerCase() === '!join' && argument) {
+    // Check if game exists and is not full
+    if (games[argument.toLowerCase()] && games[argument.toLowerCase()].players.length < 4) {
+      // Add player to game and update their Elo rating
+      const game = games[argument.toLowerCase()];
+      const player = users[phoneNumber].name + ' (' + users[phoneNumber].elo + ')';
+      game.players.push(player);
+      if (game.players.length === 4) {
+        // Start game if it's full
+        startGame(game);
+      }
+      // Reply with confirmation message
+      const reply = 'You have successfully joined ' + game.name + ' with the following players: ' + game.players.join(', ');
+      sendMessage(phoneNumber, reply);
+    } else {
+      // Reply with error message
+      const reply = 'Invalid game or game is already full';
+      sendMessage(phoneNumber, reply);
+    }
+  }
+}
+
+// Sample games data
+let games = {
+  game1: {
+    name: 'CNN - Game 1',
+    time: '10h00',
+    court: 'M4',
+    players: []
+  },
+  game2: {
+    name: 'CNN - Game 2',
+    time: '12h00',
+    court: 'M3',
+    players: []
+  }
+};
+
+// Sample function to start game
+function startGame(game) {
+  console.log('Starting game:', game.name);
+}
+
+// Sample function to send message
+function sendMessage(phoneNumber, message) {
+  console.log('Sending message to', phoneNumber, ':', message);
+}
+
+// Sample messages
+handleMessage({ phone_number: '+351936836204', body: '!join game1' });
+handleMessage({ phone_number: '+351936836204', body: '!join game2' });
+handleMessage({ phone_number: '+351936836204', body: '!join game1' }); // should fail because game1 is full
